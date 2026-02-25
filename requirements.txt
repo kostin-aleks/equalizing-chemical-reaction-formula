@@ -1,5 +1,10 @@
+aiosqlite==0.22.1
+alembic==1.18.4
 aiogram==3.25.0
 chempy==0.10.1
 mendeleev==1.1.0
 pubchempy==1.0.5
+pydantic==2.12.5
+pydantic-settings
 python-dotenv==1.2.1
+sqlalchemy==2.0.47
