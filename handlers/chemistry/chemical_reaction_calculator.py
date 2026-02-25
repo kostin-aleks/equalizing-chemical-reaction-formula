@@ -17,6 +17,7 @@ import mendeleev
 from pprint import pprint
 
 from .solving_system_equations import solution_system
+from utils.chemistry import is_chemical_equation
 
 
 def to_equation_text(equation: list) -> str:
@@ -38,9 +39,22 @@ def to_equation_text(equation: list) -> str:
 
 
 def reaction_calculator(chemical_reaction):
+    result = {
+        'list_solutions': [],
+        'substances': [],
+        'solution_details': [],
+        'error': ''
+    }
+    chemical_reaction = chemical_reaction.strip()
+    if not is_chemical_equation(chemical_reaction):
+        result['error'] = f'Получена реакция "{chemical_reaction}"\n Проверьте, не получается обработать.'
+        return result
+
     solution_details = ['Решение:\n']
-    # chemical_reaction = "Mg(OH)2 + KNO3 = MgN2O6 + KOH"
-    left, right = chemical_reaction.split('=')
+    splitter = '='
+    if '=' not in chemical_reaction:
+        splitter = '->'
+    left, right = chemical_reaction.split(splitter)
     left = [Substance.from_formula(x.strip()) for x in left.split('+')]
     right = [Substance.from_formula(x.strip()) for x in right.split('+')]
 
@@ -49,7 +63,7 @@ def reaction_calculator(chemical_reaction):
 
     print(f'\n{chemical_reaction}\n')
 
-    substances = [x.name for x in left + right]
+    substances = [{'formula': x.name, 'name': x.unicode_name} for x in left + right]
 
     substance_count = len(left) + len(right)
     solution_details.append(f"Соединений: {substance_count} = количество неизвестных\n")
@@ -84,6 +98,10 @@ def reaction_calculator(chemical_reaction):
 
     solutions, details = solution_system(matrix)
     print(solutions)
+    if not solutions:
+        result['error'] = 'Система уравнений не имеет решений. Не получается уравнять реакцию.'
+        return result
+
     solution_details += details
 
     solution_details += '\nРешения системы после оптимизации\n'
@@ -103,7 +121,11 @@ def reaction_calculator(chemical_reaction):
         list_solutions.append(f"{left_part} = {right_part}")
 
     solution_details = ''.join(solution_details)
-    return list_solutions, substances, solution_details
+    result['list_solutions'] = list_solutions
+    result['substances'] = substances
+    result['solution_details'] = solution_details
+
+    return result
 
 
 if __name__ == "__main__":

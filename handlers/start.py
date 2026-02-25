@@ -27,40 +27,27 @@ async def cmd_start(message: Message, command: CommandObject):
 async def chem_reaction_handler(message: Message):
     # get solution
     verbose = True
-    list_solutions, substances, details = reaction_calculator(message.text)
+    results = reaction_calculator(message.text)
+    # list_solutions, substances, details
+
+    if results['error']:
+        await message.answer(results['error'])
+        return
+
     report = "Реакция:\n"
-    for solution in list_solutions:
+    for solution in results['list_solutions']:
         report += f"<b>{solution}</b>"
     await message.answer(report)
 
-    if verbose and details:
-        await message.answer(details)
+    if verbose and results['solution_details']:
+        await message.answer(results['solution_details'])
 
     if verbose:
-        for substance in substances:
-            formula = substance
-            substance_name = f"{formula} is {get_name_from_formula(formula)}"
+        for substance in results['substances']:
+            formula = substance['formula']
+            name = substance['name']
+            substance_name = f"{name} is {get_name_from_formula(formula)}"
             await message.answer(substance_name)
-
-
-# @start_router.message(Command('start_2'))
-# async def cmd_start_2(message: Message):
-#     await message.answer(
-#         'Запуск сообщения по команде /start_2 используя фильтр Command()',
-#         reply_markup=create_spec_kb())
-#
-#
-# @start_router.message(F.text == '/start_3')
-# async def cmd_start_3(message: Message):
-#     await message.answer(
-#         f'Запуск сообщения по команде /start_3 используя магический фильтр F.text! {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}',
-#         reply_markup=create_rat()
-#     )
-#
-#
-# @start_router.message(F.text == 'Давай инлайн!')
-# async def get_inline_btn_link(message: Message):
-#     await message.answer('Вот тебе инлайн клавиатура со ссылками!', reply_markup=ease_link_kb())
 
 
 # async def set_commands():

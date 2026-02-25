@@ -1,5 +1,12 @@
+import re
 from urllib.error import HTTPError
 import pubchempy as pcp
+
+
+def is_chemical_equation(equation):
+    # Шаблон: коэффициенты (опц.) + Формула (Аа1) + (опц. + реагенты) + стрелка + ...
+    pattern = r"^([0-9]*[A-Za-z0-9\(\)\[\]]+\s*\+*\s*)+\s*[\=\-\>]+\s*([0-9]*[A-Za-z0-9\(\)\[\]]+\s*\+*\s*)+$"
+    return re.match(pattern, equation)
 
 
 def get_name_from_formula(formula):
@@ -8,7 +15,6 @@ def get_name_from_formula(formula):
         compounds = pcp.get_compounds(formula, 'formula')
         if compounds:
             # Возвращаем наиболее релевантное название
-            # pprint(compounds[0].to_dict())
             name = compounds[0].iupac_name
     except HTTPError:
         name = 'Unknown'
