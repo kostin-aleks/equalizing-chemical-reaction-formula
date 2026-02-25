@@ -5,16 +5,40 @@
 # NH4NO3 + Cu = Cu(NO3)2 + H2O + NH3 + NH4NO3
 # C2H4O2 + NaOH = C2H3NaO2 + H2O + C2H4O2
 import argparse
+
+from chemformula import ChemFormula
 from chempy import Substance
 from chempy import mass_fractions
 from chempy import balance_stoichiometry
 from chempy.units import default_units as u
-# from pprint import pprint
+from chempy.util import periodic
+import mendeleev
+
+from pprint import pprint
 
 from .solving_system_equations import solution_system
 
 
+def to_equation_text(equation: list) -> str:
+    equation_str = f"{equation[0]}z1" if equation[0] else ''
+    k = 1
+    while k < len(equation):
+        sign = '-' if equation[k] < 0 else '+' if equation[k] else ''
+        if equation[k]:
+            if equation_str:
+                sign_str = f" {sign} "
+            elif sign == '-':
+                sign_str = f"{sign} "
+            else:
+                sign_str = ""
+            equation_str += f"{sign_str}{abs(equation[k])}z{k+1}"
+        k += 1
+    equation_str += ' = 0'
+    return equation_str
+
+
 def reaction_calculator(chemical_reaction):
+    solution_details = ['Решение:\n']
     # chemical_reaction = "Mg(OH)2 + KNO3 = MgN2O6 + KOH"
     left, right = chemical_reaction.split('=')
     left = [Substance.from_formula(x.strip()) for x in left.split('+')]
@@ -23,14 +47,24 @@ def reaction_calculator(chemical_reaction):
     # print([x.composition for x in left])
     # print([x.composition for x in right])
 
-    # print(f'\n{chemical_reaction}\n')
+    print(f'\n{chemical_reaction}\n')
+
+    substances = [x.name for x in left + right]
 
     substance_count = len(left) + len(right)
+    solution_details.append(f"Соединений: {substance_count} = количество неизвестных\n")
 
     chem_elements = Substance.composition_keys(left + right)
-    # print(chem_elements)
+    elements_count = len(chem_elements)
+    print(chem_elements)
+    solution_details.append(f"\nЭлементов: {elements_count} = количество уравнений\n")
+    for num in chem_elements:
+        chem_element = mendeleev.element(num)
+        solution_details.append(
+            f"{chem_element.symbol} is {chem_element.name}, {chem_element.atomic_number}\n")
 
     matrix = []
+    solution_details.append('\nУравнения системы:\n')
     for element in chem_elements:
         equation = [0 for i in range(substance_count)]
         # print(equation)
@@ -41,14 +75,20 @@ def reaction_calculator(chemical_reaction):
         for item in right:
             equation[k] = -(item.composition.get(element) or 0)
             k += 1
-        # print(element, equation)
+        # print(element, periodic.symbols[element], equation)
+        chem_element = mendeleev.element(element)
+        solution_details.append(f"{chem_element.symbol} -> {to_equation_text(equation)}\n")
         matrix.append(equation)
 
     # pprint(matrix)
 
-    solutions = solution_system(matrix)
-
+    solutions, details = solution_system(matrix)
     print(solutions)
+    solution_details += details
+
+    solution_details += '\nРешения системы после оптимизации\n'
+    for solution in solutions:
+        solution_details += f"{str(solution)}\n"
 
     list_solutions = []
     for solution in solutions:
@@ -62,7 +102,8 @@ def reaction_calculator(chemical_reaction):
              in zip(right, solution[len(left):])])
         list_solutions.append(f"{left_part} = {right_part}")
 
-    return list_solutions
+    solution_details = ''.join(solution_details)
+    return list_solutions, substances, solution_details
 
 
 if __name__ == "__main__":

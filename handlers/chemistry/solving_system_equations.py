@@ -86,6 +86,7 @@ def solutions_without_zero(solutions):
 
 def solution_system(matrix):
     # print("=============== решение ==========================")
+    solution_details = ''
 
     N = len(matrix[0])
 
@@ -122,9 +123,15 @@ def solution_system(matrix):
 
     solutions = list_without_doubles(solutions)
     print(solutions)
+    if solutions:
+        solution_details += '\nРешения системы\n'
+        for solution in solutions:
+            solution_details += f"{str(solution)}\n"
+
     solutions = solutions_without_zero(solutions)
+    solutions = list_without_doubles(solutions)
 
     solutions = sorted(solutions, key=lambda x: sum(x))
 
-    return solutions
+    return solutions, solution_details
 

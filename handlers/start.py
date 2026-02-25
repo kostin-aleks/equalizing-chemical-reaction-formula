@@ -2,9 +2,11 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.types import Message
 from aiogram.types import BotCommand, BotCommandScopeDefault
+
 from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb
 from .chemistry.chemical_reaction_calculator import reaction_calculator
+from utils.chemistry import get_name_from_formula
 
 start_router = Router()
 
@@ -24,11 +26,21 @@ async def cmd_start(message: Message, command: CommandObject):
 @start_router.message(F.text)
 async def chem_reaction_handler(message: Message):
     # get solution
-    list_solutions = reaction_calculator(message.text)
+    verbose = True
+    list_solutions, substances, details = reaction_calculator(message.text)
     report = "Реакция:\n"
     for solution in list_solutions:
         report += f"<b>{solution}</b>"
     await message.answer(report)
+
+    if verbose and details:
+        await message.answer(details)
+
+    if verbose:
+        for substance in substances:
+            formula = substance
+            substance_name = f"{formula} is {get_name_from_formula(formula)}"
+            await message.answer(substance_name)
 
 
 # @start_router.message(Command('start_2'))
