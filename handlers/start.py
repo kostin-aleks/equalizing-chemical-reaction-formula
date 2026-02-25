@@ -1,4 +1,5 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
+from aiogram.enums import ChatAction
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.types import Message
 from aiogram.types import BotCommand, BotCommandScopeDefault
@@ -24,7 +25,7 @@ async def cmd_start(message: Message, command: CommandObject):
 
 
 @start_router.message(F.text)
-async def chem_reaction_handler(message: Message):
+async def chem_reaction_handler(message: Message, bot: Bot):
     # get solution
     verbose = True
     results = reaction_calculator(message.text)
@@ -44,6 +45,7 @@ async def chem_reaction_handler(message: Message):
 
     if verbose:
         for substance in results['substances']:
+            await bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
             formula = substance['formula']
             name = substance['name']
             substance_name = f"{name} is {get_name_from_formula(formula)}"
