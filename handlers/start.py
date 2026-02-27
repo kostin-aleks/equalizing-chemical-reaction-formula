@@ -50,9 +50,9 @@ async def store_user(message):
 async def get_substance_name(substance):
     statement = select(Substance).where(Substance.formula == substance['name'])
     items = await db.execute(statement)
-    stored_substance = items.first()
+    stored_substance = items.scalars().first()
     if stored_substance:
-        stored_substance = stored_substance[0]
+        # stored_substance = stored_substance[0]
         return stored_substance.formula, stored_substance.name
 
     return None, None
