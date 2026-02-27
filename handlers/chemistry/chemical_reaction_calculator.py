@@ -75,7 +75,7 @@ def reaction_calculator(chemical_reaction):
     for num in chem_elements:
         chem_element = mendeleev.element(num)
         solution_details.append(
-            f"{chem_element.symbol} is {chem_element.name}, {chem_element.atomic_number}\n")
+            f"{chem_element.atomic_number:>3} {chem_element.symbol:<2} is {chem_element.name}\n")
 
     matrix = []
     solution_details.append('\nУравнения системы:\n')
