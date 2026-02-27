@@ -19,7 +19,7 @@ class User(Base):
     profile_id: Mapped[int | None] = mapped_column(ForeignKey('profiles.id'))
     is_admin: Mapped[bool] = mapped_column(default=False)
 
-    purchases: Mapped[List['ChemicalReaction']] = relationship(
+    requests: Mapped[List['ChemicalReaction']] = relationship(
         "ChemicalReaction",
         back_populates="user",
         cascade="all, delete-orphan"
