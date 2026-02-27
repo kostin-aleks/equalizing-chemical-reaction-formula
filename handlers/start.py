@@ -57,8 +57,8 @@ async def store_reaction(message: Message, reactions: list[str]):
         else:
             reaction = ' | '.join(reactions)
     reaction = ChemicalReaction(
-        telegram_id=telegram_user.id,
-        request=message,
+        user_id=telegram_user.id,
+        request=message.text,
         equation=reaction
     )
     db.add(reaction)

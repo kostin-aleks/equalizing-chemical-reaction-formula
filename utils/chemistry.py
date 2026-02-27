@@ -11,13 +11,14 @@ def is_chemical_equation(equation):
 
 def get_name_from_formula(formula):
     # Поиск соединений по формуле
+    name = 'unknown'
     try:
         compounds = pcp.get_compounds(formula, 'formula')
         if compounds:
             # Возвращаем наиболее релевантное название
             name = compounds[0].iupac_name
     except HTTPError:
-        name = 'Unknown'
+        pass
     except pcp.BadRequestError:
-        name = 'Unknown'
+        pass
     return name
