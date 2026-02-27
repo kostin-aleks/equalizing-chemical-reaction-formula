@@ -4,12 +4,16 @@ from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.types import Message
 from aiogram.types import BotCommand, BotCommandScopeDefault
 
+from sqlalchemy import select
 from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb
 from .chemistry.chemical_reaction_calculator import reaction_calculator
 from utils.chemistry import get_name_from_formula
+from db_handler.models import User, Substance
+from db_handler.database import async_session_maker
 
 start_router = Router()
+db = async_session_maker()
 
 
 @start_router.message(CommandStart())
@@ -24,12 +28,42 @@ async def cmd_start(message: Message, command: CommandObject):
     )
 
 
+async def store_user(message):
+    # print(f'Пользователь: {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}')
+    telegram_user = message.from_user
+    statement = select(User).where(User.telegram_id == telegram_user.id)
+    users = await db.scalars(statement)
+    user = users.first()
+
+    # print(user)
+    if not user:
+        user = User(
+            telegram_id=telegram_user.id,
+            username=telegram_user.username,
+            first_name=telegram_user.first_name,
+            is_admin=False
+        )
+        db.add(user)
+        await db.commit()
+
+
+async def get_substance_name(substance):
+    statement = select(Substance).where(Substance.formula == substance['name'])
+    items = await db.execute(statement)
+    stored_substance = items.first()
+    if stored_substance:
+        stored_substance = stored_substance[0]
+        return stored_substance.formula, stored_substance.name
+
+    return None, None
+
+
 @start_router.message(F.text)
 async def chem_reaction_handler(message: Message, bot: Bot):
+    await store_user(message)
     # get solution
     verbose = True
     results = reaction_calculator(message.text)
-    # list_solutions, substances, details
 
     if results['error']:
         await message.answer(results['error'])
@@ -45,10 +79,26 @@ async def chem_reaction_handler(message: Message, bot: Bot):
 
     if verbose:
         for substance in results['substances']:
+            # попытаться извлечь из бд. если успешно то вернуть
+            formula, name = await get_substance_name(substance)
+            if formula and name:
+                substance_name = f"{substance['name']} is {name}"
+                await message.answer(substance_name)
+                continue
+
+            # сохранить неизвестное вещество в таблицу
             await bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
             formula = substance['formula']
             name = substance['name']
-            substance_name = f"{name} is {get_name_from_formula(formula)}"
+            title = get_name_from_formula(formula)
+            substance_name = f"{name} is {title}"
+            # сохранить в базе
+            stored_substance = Substance(
+                formula=name,
+                name=title,
+            )
+            db.add(stored_substance)
+            await db.commit()
             await message.answer(substance_name)
 
 

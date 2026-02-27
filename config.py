@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     # DB_PORT: int
     DB_NAME: str
     TOKEN: str
+    FORMAT_LOG: str = "{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}"
+    LOG_ROTATION: str = "10 MB"
 
     # DATABASE_SQLITE: str = 'sqlite+aiosqlite:///data/{self.DB_NAME}'
 
