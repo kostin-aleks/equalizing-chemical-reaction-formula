@@ -9,7 +9,7 @@ from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb
 from .chemistry.chemical_reaction_calculator import reaction_calculator
 from utils.chemistry import get_name_from_formula
-from db_handler.models import User, Substance
+from db_handler.models import User, Substance, ChemicalReaction
 from db_handler.database import async_session_maker
 
 start_router = Router()
@@ -29,7 +29,6 @@ async def cmd_start(message: Message, command: CommandObject):
 
 
 async def store_user(message):
-    # print(f'Пользователь: {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}')
     telegram_user = message.from_user
     statement = select(User).where(User.telegram_id == telegram_user.id)
     users = await db.scalars(statement)
@@ -45,6 +44,25 @@ async def store_user(message):
         )
         db.add(user)
         await db.commit()
+
+
+async def store_reaction(message: Message, reactions: list[str]):
+    telegram_user = message.from_user
+    # statement = select(User).where(User.telegram_id == telegram_user.id)
+
+    reaction = ''
+    if reactions:
+        if len(reactions) == 1:
+            reaction = reactions[0]
+        else:
+            reaction = ' | '.join(reactions)
+    reaction = ChemicalReaction(
+        telegram_id=telegram_user.id,
+        request=message,
+        equation=reaction
+    )
+    db.add(reaction)
+    await db.commit()
 
 
 async def get_substance_name(substance):
@@ -73,6 +91,8 @@ async def chem_reaction_handler(message: Message, bot: Bot):
     for solution in results['list_solutions']:
         report += f"<b>{solution}</b>"
     await message.answer(report)
+
+    await store_reaction(message, results['list_solutions'])
 
     if verbose and results['solution_details']:
         await message.answer(results['solution_details'])
