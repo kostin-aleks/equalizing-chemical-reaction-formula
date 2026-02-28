@@ -6,9 +6,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .database import Base
 
 
-class PermissionEnum(str, enum.Enum):
+class ModeEnum(str, enum.Enum):
     DEFAULT = "default"
-    ADMIN = "admin"
+    DETAILED = "detailed"
 
 
 class User(Base):
@@ -29,7 +29,7 @@ class User(Base):
 class Profile(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     user: Mapped["User"] = relationship("User", back_populates="profile")
-    permission: Mapped[PermissionEnum] = mapped_column(default=PermissionEnum.DEFAULT, server_default=text("'default'"))
+    mode: Mapped[ModeEnum] = mapped_column(default=ModeEnum.DEFAULT, server_default=text("'default'"))
 
 
 class Substance(Base):

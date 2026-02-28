@@ -43,10 +43,9 @@ async def cmd_set_detailed(message: Message):
 async def store_user(message):
     telegram_user = message.from_user
     statement = select(User).where(User.telegram_id == telegram_user.id)
-    users = await db.scalars(statement)
-    user = users.first()
+    users = await db.execute(statement)
+    user = users.scalars().first()
 
-    # print(user)
     if not user:
         user = User(
             telegram_id=telegram_user.id,
@@ -56,6 +55,8 @@ async def store_user(message):
         )
         db.add(user)
         await db.commit()
+
+    return user
 
 
 async def store_reaction(message: Message, reactions: list[str]):
