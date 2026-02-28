@@ -16,7 +16,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     first_name: Mapped[str | None]
     last_name: Mapped[str | None]
-    profile: Mapped['Profile'] = relationship(back_populates='profile')
+    profile: Mapped['Profile'] = relationship("Profile", uselist=False, back_populates='user')
     is_admin: Mapped[bool] = mapped_column(default=False)
 
     requests: Mapped[List['ChemicalReaction']] = relationship(
