@@ -28,6 +28,18 @@ async def cmd_start(message: Message, command: CommandObject):
     )
 
 
+@start_router.message(Command('detailed-solution'))
+async def cmd_set_detailed(message: Message):
+    # получить пользователя
+    await store_user(message)
+    # получить или создать профиль
+    # установить режим и сохранить
+    await message.answer(
+        'Установлен режим вывода подробного хода решения.',
+        # reply_markup=create_spec_kb()
+    )
+
+
 async def store_user(message):
     telegram_user = message.from_user
     statement = select(User).where(User.telegram_id == telegram_user.id)

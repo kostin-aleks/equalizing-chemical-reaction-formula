@@ -16,7 +16,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     first_name: Mapped[str | None]
     last_name: Mapped[str | None]
-    profile_id: Mapped[int | None] = mapped_column(ForeignKey('profiles.id'))
+    profile: Mapped['Profile'] = relationship(back_populates='profile')
     is_admin: Mapped[bool] = mapped_column(default=False)
 
     requests: Mapped[List['ChemicalReaction']] = relationship(
@@ -27,6 +27,8 @@ class User(Base):
 
 
 class Profile(Base):
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user: Mapped["User"] = relationship("User", back_populates="profile")
     permission: Mapped[PermissionEnum] = mapped_column(default=PermissionEnum.DEFAULT, server_default=text("'default'"))
 
 
