@@ -1,6 +1,6 @@
 import asyncio
 
-from create_bot import bot, dp, scheduler
+from create_bot import bot, dp  # , scheduler
 from handlers.admin_panel import admin_router
 from handlers.start import set_commands, start_router
 

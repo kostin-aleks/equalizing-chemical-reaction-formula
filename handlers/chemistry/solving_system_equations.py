@@ -73,7 +73,6 @@ def solutions_without_zero(solutions):
         if 0 not in vector:
             result.append(vector)
         else:
-            k = 0
             for item in solutions:
                 combination = sum_vectors(vector, item)
                 if 0 not in combination:

@@ -5,13 +5,9 @@
 # NH4NO3 + Cu = Cu(NO3)2 + H2O + NH3 + NH4NO3
 # C2H4O2 + NaOH = C2H3NaO2 + H2O + C2H4O2
 import argparse
-from pprint import pprint
 
 import mendeleev
-from chemformula import ChemFormula
-from chempy import Substance, balance_stoichiometry, mass_fractions
-from chempy.units import default_units as u
-from chempy.util import periodic
+from chempy import Substance
 
 from utils.chemistry import is_chemical_equation
 
@@ -124,7 +120,7 @@ def reaction_calculator(chemical_reaction):
         right_part = " + ".join(
             [
                 f"{k if k > 1 else ''}{substance.unicode_name}"
-                for substance, k in zip(right, solution[len(left) :])
+                for substance, k in zip(right, solution[len(left):])
             ]
         )
         list_solutions.append(f"{left_part} = {right_part}")

@@ -10,11 +10,10 @@ from db_handler.models import (
     ModeEnum,
     Profile,
     Substance,
-    User,
     store_user,
 )
 from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
-from keyboards.inline_kbs import ease_link_kb
+# from keyboards.inline_kbs import ease_link_kb
 from utils.chemistry import get_name_from_formula
 
 from .chemistry.chemical_reaction_calculator import reaction_calculator
