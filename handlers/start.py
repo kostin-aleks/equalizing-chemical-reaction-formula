@@ -9,7 +9,7 @@ from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb
 from .chemistry.chemical_reaction_calculator import reaction_calculator
 from utils.chemistry import get_name_from_formula
-from db_handler.models import User, Substance, ChemicalReaction
+from db_handler.models import User, Profile, Substance, ChemicalReaction, ModeEnum, store_user
 from db_handler.database import async_session_maker
 
 start_router = Router()
@@ -18,50 +18,67 @@ db = async_session_maker()
 
 @start_router.message(CommandStart())
 async def cmd_start(message: Message, command: CommandObject):
+    user = await store_user(message)
     await message.answer(
         '''
         Для уравнивания химической реакции, введите уравнение реакции.\n
         Используйте заглавные символы для начального знака элемента и строчные символы для второго знака.
         Примеры: Fe, Au, Co, Br, C, O, N, F.\n
         Например, реакция H2O = H + O''',
-        # reply_markup=main_kb(message.from_user.id)
+        reply_markup=main_kb(user)
     )
 
 
-@start_router.message(Command('detailed-solution'))
+@start_router.message(Command('detailedsolution'))
 async def cmd_set_detailed(message: Message):
     # получить пользователя
-    await store_user(message)
+    user = await store_user(message)
+    # print(f'User: {user}')
     # получить или создать профиль
+    profile = user.profile
+    if not profile:
+        profile = Profile(
+            user=user,
+        )
+        db.add(profile)
+        await db.commit()
     # установить режим и сохранить
+    profile.mode = ModeEnum.DETAILED
+    db.add(profile)
+    await db.commit()
+
     await message.answer(
         'Установлен режим вывода подробного хода решения.',
         # reply_markup=create_spec_kb()
     )
 
 
-async def store_user(message):
-    telegram_user = message.from_user
-    statement = select(User).where(User.telegram_id == telegram_user.id)
-    users = await db.execute(statement)
-    user = users.scalars().first()
-
-    if not user:
-        user = User(
-            telegram_id=telegram_user.id,
-            username=telegram_user.username,
-            first_name=telegram_user.first_name,
-            is_admin=False
+@start_router.message(Command('shortsolution'))
+async def cmd_set_short(message: Message):
+    # получить пользователя
+    user = await store_user(message)
+    # print(f'User: {user}')
+    # получить или создать профиль
+    profile = user.profile
+    if not profile:
+        profile = Profile(
+            user=user,
         )
-        db.add(user)
+        db.add(profile)
         await db.commit()
+    # установить режим и сохранить
+    profile.mode = ModeEnum.DEFAULT
+    db.add(profile)
+    await db.commit()
 
-    return user
+    await message.answer(
+        'Установлен режим вывода по умолчанию.',
+        # reply_markup=create_spec_kb()
+    )
 
 
 async def store_reaction(message: Message, reactions: list[str]):
     telegram_user = message.from_user
-    # statement = select(User).where(User.telegram_id == telegram_user.id)
 
     reaction = ''
     if reactions:
@@ -91,9 +108,13 @@ async def get_substance_name(substance):
 
 @start_router.message(F.text)
 async def chem_reaction_handler(message: Message, bot: Bot):
-    await store_user(message)
+    user = await store_user(message)
+    profile = user.profile
+    verbose = False
+    if profile and profile.mode == ModeEnum.DETAILED:
+        verbose = True
+
     # get solution
-    verbose = True
     results = reaction_calculator(message.text)
 
     if results['error']:
@@ -135,8 +156,8 @@ async def chem_reaction_handler(message: Message, bot: Bot):
             await message.answer(substance_name)
 
 
-# async def set_commands():
-#     commands = [BotCommand(command='start', description='Старт'),
-#                 BotCommand(command='start_2', description='Старт 2'),
-#                 BotCommand(command='start_3', description='Старт 3')]
-#     await bot.set_my_commands(commands, BotCommandScopeDefault())
+async def set_commands():
+    commands = [BotCommand(command='start', description='Старт'),
+                BotCommand(command='detailedsolution', description='Установить режим вывода подробной информации'),
+                BotCommand(command='shortsolution', description='Сбросить режим подробной информации')]
+    await bot.set_my_commands(commands, BotCommandScopeDefault())

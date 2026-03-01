@@ -1,20 +1,20 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, KeyboardButtonPollType
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from create_bot import admins
+from db_handler.models import User
 
 
-def main_kb(user_telegram_id: int):
+def main_kb(user: User):
     kb_list = [
-        [KeyboardButton(text="Давай инлайн!"), KeyboardButton(text="👤 Профиль")],
-        [KeyboardButton(text="📝 Заполнить анкету"), KeyboardButton(text="📚 Каталог")]
+        # [KeyboardButton(text="Уравнять химическую реакцию"), ],
     ]
-    if user_telegram_id in admins:
+    if user and user.is_admin:
         kb_list.append([KeyboardButton(text="⚙️ Админ панель")])
     keyboard = ReplyKeyboardMarkup(
         keyboard=kb_list,
         resize_keyboard=True,
         one_time_keyboard=True,
-        input_field_placeholder="Воспользуйтесь меню:"
+        input_field_placeholder="Введите химическую реакцию"
     )
     return keyboard
 

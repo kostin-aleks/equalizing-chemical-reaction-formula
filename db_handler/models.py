@@ -1,9 +1,12 @@
 import enum
 from typing import List
-from sqlalchemy import BigInteger, Text, String, ForeignKey, text
+
+from sqlalchemy import select, BigInteger, Text, String, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .database import Base
+from .database import Base, async_session_maker
+
+db = async_session_maker()
 
 
 class ModeEnum(str, enum.Enum):
@@ -16,7 +19,12 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     first_name: Mapped[str | None]
     last_name: Mapped[str | None]
-    profile: Mapped['Profile'] = relationship("Profile", uselist=False, back_populates='user')
+    profile: Mapped['Profile'] = relationship(
+        "Profile",
+        uselist=False,
+        back_populates='user',
+        lazy="joined"
+    )
     is_admin: Mapped[bool] = mapped_column(default=False)
 
     requests: Mapped[List['ChemicalReaction']] = relationship(
@@ -28,7 +36,7 @@ class User(Base):
 
 class Profile(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    user: Mapped["User"] = relationship("User", back_populates="profile")
+    user: Mapped["User"] = relationship("User", back_populates="profile", uselist=False)
     mode: Mapped[ModeEnum] = mapped_column(default=ModeEnum.DEFAULT, server_default=text("'default'"))
 
 
@@ -42,3 +50,22 @@ class ChemicalReaction(Base):
     user: Mapped["User"] = relationship("User", back_populates="requests")
     request: Mapped[str] = mapped_column(String, nullable=False)
     equation: Mapped[str | None]
+
+
+async def store_user(message):
+    telegram_user = message.from_user
+    statement = select(User).where(User.telegram_id == telegram_user.id)
+    users = await db.execute(statement)
+    user = users.scalars().first()
+
+    if not user:
+        user = User(
+            telegram_id=telegram_user.id,
+            username=telegram_user.username,
+            first_name=telegram_user.first_name,
+            is_admin=False
+        )
+        db.add(user)
+        await db.commit()
+
+    return user
