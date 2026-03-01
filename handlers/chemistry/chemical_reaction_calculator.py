@@ -19,49 +19,51 @@ from .solving_system_equations import solution_system
 
 
 def to_equation_text(equation: list) -> str:
-    equation_str = f"{equation[0]}z1" if equation[0] else ''
+    equation_str = f"{equation[0]}z1" if equation[0] else ""
     k = 1
     while k < len(equation):
-        sign = '-' if equation[k] < 0 else '+' if equation[k] else ''
+        sign = "-" if equation[k] < 0 else "+" if equation[k] else ""
         if equation[k]:
             if equation_str:
                 sign_str = f" {sign} "
-            elif sign == '-':
+            elif sign == "-":
                 sign_str = f"{sign} "
             else:
                 sign_str = ""
             equation_str += f"{sign_str}{abs(equation[k])}z{k+1}"
         k += 1
-    equation_str += ' = 0'
+    equation_str += " = 0"
     return equation_str
 
 
 def reaction_calculator(chemical_reaction):
     result = {
-        'list_solutions': [],
-        'substances': [],
-        'solution_details': [],
-        'error': ''
+        "list_solutions": [],
+        "substances": [],
+        "solution_details": [],
+        "error": "",
     }
     chemical_reaction = chemical_reaction.strip()
     if not is_chemical_equation(chemical_reaction):
-        result['error'] = f'Получена реакция "{chemical_reaction}"\n Проверьте, не получается обработать.'
+        result["error"] = (
+            f'Получена реакция "{chemical_reaction}"\n Проверьте, не получается обработать.'
+        )
         return result
 
-    solution_details = ['Решение:\n']
-    splitter = '='
-    if '=' not in chemical_reaction:
-        splitter = '->'
+    solution_details = ["Решение:\n"]
+    splitter = "="
+    if "=" not in chemical_reaction:
+        splitter = "->"
     left, right = chemical_reaction.split(splitter)
-    left = [Substance.from_formula(x.strip()) for x in left.split('+')]
-    right = [Substance.from_formula(x.strip()) for x in right.split('+')]
+    left = [Substance.from_formula(x.strip()) for x in left.split("+")]
+    right = [Substance.from_formula(x.strip()) for x in right.split("+")]
 
     # print([x.composition for x in left])
     # print([x.composition for x in right])
 
-    print(f'\n{chemical_reaction}\n')
+    print(f"\n{chemical_reaction}\n")
 
-    substances = [{'formula': x.name, 'name': x.unicode_name} for x in left + right]
+    substances = [{"formula": x.name, "name": x.unicode_name} for x in left + right]
 
     substance_count = len(left) + len(right)
     solution_details.append(f"Соединений: {substance_count} = количество неизвестных\n")
@@ -73,10 +75,11 @@ def reaction_calculator(chemical_reaction):
     for num in chem_elements:
         chem_element = mendeleev.element(num)
         solution_details.append(
-            f"{chem_element.atomic_number:>3} {chem_element.symbol:<2} is {chem_element.name}\n")
+            f"{chem_element.atomic_number:>3} {chem_element.symbol:<2} is {chem_element.name}\n"
+        )
 
     matrix = []
-    solution_details.append('\nУравнения системы:\n')
+    solution_details.append("\nУравнения системы:\n")
     for element in chem_elements:
         equation = [0 for i in range(substance_count)]
         # print(equation)
@@ -89,7 +92,9 @@ def reaction_calculator(chemical_reaction):
             k += 1
         # print(element, periodic.symbols[element], equation)
         chem_element = mendeleev.element(element)
-        solution_details.append(f"{chem_element.symbol} -> {to_equation_text(equation)}\n")
+        solution_details.append(
+            f"{chem_element.symbol} -> {to_equation_text(equation)}\n"
+        )
         matrix.append(equation)
 
     # pprint(matrix)
@@ -97,31 +102,37 @@ def reaction_calculator(chemical_reaction):
     solutions, details = solution_system(matrix)
     print(solutions)
     if not solutions:
-        result['error'] = 'Система уравнений не имеет решений. Не получается уравнять реакцию.'
+        result["error"] = (
+            "Система уравнений не имеет решений. Не получается уравнять реакцию."
+        )
         return result
 
     solution_details += details
 
-    solution_details += '\nРешения системы после оптимизации\n'
+    solution_details += "\nРешения системы после оптимизации\n"
     for solution in solutions:
         solution_details += f"{str(solution)}\n"
 
     list_solutions = []
     for solution in solutions:
-        left_part = ' + '.join(
-            [f"{k if k > 1 else ''}{substance.unicode_name}"
-             for substance, k
-             in zip(left, solution[:len(left)])])
-        right_part = ' + '.join(
-            [f"{k if k > 1 else ''}{substance.unicode_name}"
-             for substance, k
-             in zip(right, solution[len(left):])])
+        left_part = " + ".join(
+            [
+                f"{k if k > 1 else ''}{substance.unicode_name}"
+                for substance, k in zip(left, solution[: len(left)])
+            ]
+        )
+        right_part = " + ".join(
+            [
+                f"{k if k > 1 else ''}{substance.unicode_name}"
+                for substance, k in zip(right, solution[len(left) :])
+            ]
+        )
         list_solutions.append(f"{left_part} = {right_part}")
 
-    solution_details = ''.join(solution_details)
-    result['list_solutions'] = list_solutions
-    result['substances'] = substances
-    result['solution_details'] = solution_details
+    solution_details = "".join(solution_details)
+    result["list_solutions"] = list_solutions
+    result["substances"] = substances
+    result["solution_details"] = solution_details
 
     return result
 
@@ -129,10 +140,12 @@ def reaction_calculator(chemical_reaction):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "reaction", nargs="?",
+        "reaction",
+        nargs="?",
         default="Mg(OH)2 + KNO3 = MgN2O6 + KOH",
         help="Chemical reaction",
-        type=str)
+        type=str,
+    )
     args = parser.parse_args()
     # print(args)
     chemical_reaction = args.reaction
@@ -140,6 +153,3 @@ if __name__ == "__main__":
     list_solutions = reaction_calculator(chemical_reaction)
     for solution in list_solutions:
         print(solution)
-
-
-

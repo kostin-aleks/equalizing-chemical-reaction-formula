@@ -1,10 +1,8 @@
 from datetime import datetime
 
 from sqlalchemy import TIMESTAMP, DateTime, Integer, func
-from sqlalchemy.ext.asyncio import (AsyncAttrs, async_sessionmaker,
-                                    create_async_engine)
-from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
-                            mapped_column)
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 from config import settings
 
@@ -19,13 +17,16 @@ async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 # Базовый класс для всех моделей
 class Base(AsyncAttrs, DeclarativeBase):
-    __abstract__ = True  # Класс абстрактный, чтобы не создавать отдельную таблицу для него
+    __abstract__ = (
+        True  # Класс абстрактный, чтобы не создавать отдельную таблицу для него
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=func.now(), onupdate=func.now()
+    )
 
     @declared_attr.directive
     def __tablename__(cls) -> str:
-        return cls.__name__.lower() + 's'
-
+        return cls.__name__.lower() + "s"

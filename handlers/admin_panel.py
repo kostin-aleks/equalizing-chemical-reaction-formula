@@ -5,8 +5,7 @@ from aiogram.utils.chat_action import ChatActionSender
 from sqlalchemy import func, select
 
 from db_handler.database import async_session_maker
-from db_handler.models import (ChemicalReaction, Profile, Substance, User,
-                               store_user)
+from db_handler.models import ChemicalReaction, Profile, Substance, User, store_user
 from keyboards.all_kb import main_kb
 from utils.chemistry import get_name_from_formula
 
@@ -16,7 +15,7 @@ admin_router = Router()
 db = async_session_maker()
 
 
-@admin_router.message(F.text.endswith('Админ панель'))
+@admin_router.message(F.text.endswith("Админ панель"))
 async def admin_panel(message: Message, bot: Bot):
     user = await store_user(message)
 
@@ -34,17 +33,19 @@ async def admin_panel(message: Message, bot: Bot):
         # print(users_count)
         # print(admins_count)
 
-        admin_text = 'В базе данных:\n'
-        admin_text += emoji.emojize(f':student: Пользователи: <b>{users_count}</b> \n')
-        admins = ' '.join([admin.username for admin in items])
-        admin_text += emoji.emojize(f':technologist:  Админы: <b>{admins_count}</b> ({admins})\n\n')
+        admin_text = "В базе данных:\n"
+        admin_text += emoji.emojize(f":student: Пользователи: <b>{users_count}</b> \n")
+        admins = " ".join([admin.username for admin in items])
+        admin_text += emoji.emojize(
+            f":technologist:  Админы: <b>{admins_count}</b> ({admins})\n\n"
+        )
 
         statement = select(func.count()).select_from(Substance)
         substance_count = await db.scalar(statement)
-        admin_text += f'\u269b Сохранено веществ: <b>{substance_count}</b> \n'
+        admin_text += f"\u269b Сохранено веществ: <b>{substance_count}</b> \n"
 
         statement = select(func.count()).select_from(ChemicalReaction)
         equation_count = await db.scalar(statement)
-        admin_text += f'\u2696 Количество запросов: <b>{equation_count}</b> \n'
+        admin_text += f"\u2696 Количество запросов: <b>{equation_count}</b> \n"
 
     await message.answer(admin_text, reply_markup=main_kb(user))

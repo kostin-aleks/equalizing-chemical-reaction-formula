@@ -5,8 +5,14 @@ from aiogram.types import BotCommand, BotCommandScopeDefault, Message
 from sqlalchemy import select
 
 from db_handler.database import async_session_maker
-from db_handler.models import (ChemicalReaction, ModeEnum, Profile, Substance,
-                               User, store_user)
+from db_handler.models import (
+    ChemicalReaction,
+    ModeEnum,
+    Profile,
+    Substance,
+    User,
+    store_user,
+)
 from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb
 from utils.chemistry import get_name_from_formula
@@ -21,16 +27,16 @@ db = async_session_maker()
 async def cmd_start(message: Message, command: CommandObject):
     user = await store_user(message)
     await message.answer(
-        '''
+        """
         Для уравнивания химической реакции, введите уравнение реакции.\n
         Используйте заглавные символы для начального знака элемента и строчные символы для второго знака.
         Примеры: Fe, Au, Co, Br, C, O, N, F.\n
-        Например, реакция H2O = H + O''',
-        reply_markup=main_kb(user)
+        Например, реакция H2O = H + O""",
+        reply_markup=main_kb(user),
     )
 
 
-@start_router.message(Command('detailedsolution'))
+@start_router.message(Command("detailedsolution"))
 async def cmd_set_detailed(message: Message):
     # получить пользователя
     user = await store_user(message)
@@ -49,12 +55,12 @@ async def cmd_set_detailed(message: Message):
     await db.commit()
 
     await message.answer(
-        'Установлен режим вывода подробного хода решения.',
+        "Установлен режим вывода подробного хода решения.",
         # reply_markup=create_spec_kb()
     )
 
 
-@start_router.message(Command('shortsolution'))
+@start_router.message(Command("shortsolution"))
 async def cmd_set_short(message: Message):
     # получить пользователя
     user = await store_user(message)
@@ -73,7 +79,7 @@ async def cmd_set_short(message: Message):
     await db.commit()
 
     await message.answer(
-        'Установлен режим вывода по умолчанию.',
+        "Установлен режим вывода по умолчанию.",
         # reply_markup=create_spec_kb()
     )
 
@@ -81,23 +87,21 @@ async def cmd_set_short(message: Message):
 async def store_reaction(message: Message, reactions: list[str]):
     telegram_user = message.from_user
 
-    reaction = ''
+    reaction = ""
     if reactions:
         if len(reactions) == 1:
             reaction = reactions[0]
         else:
-            reaction = ' | '.join(reactions)
+            reaction = " | ".join(reactions)
     reaction = ChemicalReaction(
-        user_id=telegram_user.id,
-        request=message.text,
-        equation=reaction
+        user_id=telegram_user.id, request=message.text, equation=reaction
     )
     db.add(reaction)
     await db.commit()
 
 
 async def get_substance_name(substance):
-    statement = select(Substance).where(Substance.formula == substance['name'])
+    statement = select(Substance).where(Substance.formula == substance["name"])
     items = await db.execute(statement)
     stored_substance = items.scalars().first()
     if stored_substance:
@@ -118,22 +122,22 @@ async def chem_reaction_handler(message: Message, bot: Bot):
     # get solution
     results = reaction_calculator(message.text)
 
-    if results['error']:
-        await message.answer(results['error'])
+    if results["error"]:
+        await message.answer(results["error"])
         return
 
     report = "Реакция:\n"
-    for solution in results['list_solutions']:
+    for solution in results["list_solutions"]:
         report += f"<b>{solution}</b>"
     await message.answer(report)
 
-    await store_reaction(message, results['list_solutions'])
+    await store_reaction(message, results["list_solutions"])
 
-    if verbose and results['solution_details']:
-        await message.answer(results['solution_details'])
+    if verbose and results["solution_details"]:
+        await message.answer(results["solution_details"])
 
     if verbose:
-        for substance in results['substances']:
+        for substance in results["substances"]:
             # попытаться извлечь из бд. если успешно то вернуть
             formula, name = await get_substance_name(substance)
             if formula and name:
@@ -142,9 +146,11 @@ async def chem_reaction_handler(message: Message, bot: Bot):
                 continue
 
             # сохранить неизвестное вещество в таблицу
-            await bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
-            formula = substance['formula']
-            name = substance['name']
+            await bot.send_chat_action(
+                chat_id=message.chat.id, action=ChatAction.TYPING
+            )
+            formula = substance["formula"]
+            name = substance["name"]
             title = get_name_from_formula(formula)
             substance_name = f"{name} is {title}"
             # сохранить в базе
@@ -158,7 +164,14 @@ async def chem_reaction_handler(message: Message, bot: Bot):
 
 
 async def set_commands():
-    commands = [BotCommand(command='start', description='Старт'),
-                BotCommand(command='detailedsolution', description='Установить режим вывода подробной информации'),
-                BotCommand(command='shortsolution', description='Сбросить режим подробной информации')]
+    commands = [
+        BotCommand(command="start", description="Старт"),
+        BotCommand(
+            command="detailedsolution",
+            description="Установить режим вывода подробной информации",
+        ),
+        BotCommand(
+            command="shortsolution", description="Сбросить режим подробной информации"
+        ),
+    ]
     await bot.set_my_commands(commands, BotCommandScopeDefault())
