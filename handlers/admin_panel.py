@@ -14,7 +14,7 @@ db = async_session_maker()
 
 
 @admin_router.message(F.text.endswith('Админ панель'))
-async def dashboard(message: Message, bot: Bot):
+async def admin_panel(message: Message, bot: Bot):
     user = await store_user(message)
 
     async with ChatActionSender.typing(bot=bot, chat_id=message.from_user.id):
@@ -28,8 +28,8 @@ async def dashboard(message: Message, bot: Bot):
         items = await db.execute(statement)
         items = items.scalars().all()
 
-        print(users_count)
-        print(admins_count)
+        # print(users_count)
+        # print(admins_count)
 
         admin_text = 'В базе данных:\n'
         admin_text += emoji.emojize(f':student: Пользователи: <b>{users_count}</b> \n')
