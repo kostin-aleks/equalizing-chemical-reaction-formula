@@ -1,5 +1,7 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                           WebAppInfo)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 
 def ease_link_kb():
     inline_kb_list = [

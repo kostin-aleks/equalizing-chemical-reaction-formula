@@ -1,7 +1,8 @@
 import asyncio
+
 from create_bot import bot, dp, scheduler
-from handlers.start import start_router, set_commands
 from handlers.admin_panel import admin_router
+from handlers.start import set_commands, start_router
 
 # from work_time.time_func import send_time_msg
 

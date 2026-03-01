@@ -5,19 +5,17 @@
 # NH4NO3 + Cu = Cu(NO3)2 + H2O + NH3 + NH4NO3
 # C2H4O2 + NaOH = C2H3NaO2 + H2O + C2H4O2
 import argparse
-
-from chemformula import ChemFormula
-from chempy import Substance
-from chempy import mass_fractions
-from chempy import balance_stoichiometry
-from chempy.units import default_units as u
-from chempy.util import periodic
-import mendeleev
-
 from pprint import pprint
 
-from .solving_system_equations import solution_system
+import mendeleev
+from chemformula import ChemFormula
+from chempy import Substance, balance_stoichiometry, mass_fractions
+from chempy.units import default_units as u
+from chempy.util import periodic
+
 from utils.chemistry import is_chemical_equation
+
+from .solving_system_equations import solution_system
 
 
 def to_equation_text(equation: list) -> str:

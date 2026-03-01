@@ -1,5 +1,7 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, KeyboardButtonPollType
+from aiogram.types import (KeyboardButton, KeyboardButtonPollType,
+                           ReplyKeyboardMarkup)
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
+
 from create_bot import admins
 from db_handler.models import User
 

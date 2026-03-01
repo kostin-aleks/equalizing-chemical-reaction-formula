@@ -1,13 +1,16 @@
-from aiogram import Router, F, Bot
+import emoji
+from aiogram import Bot, F, Router
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
-import emoji
-from sqlalchemy import select, func
-from keyboards.all_kb import main_kb
-from .chemistry.chemical_reaction_calculator import reaction_calculator
-from utils.chemistry import get_name_from_formula
-from db_handler.models import User, Profile, Substance, ChemicalReaction, store_user
+from sqlalchemy import func, select
+
 from db_handler.database import async_session_maker
+from db_handler.models import (ChemicalReaction, Profile, Substance, User,
+                               store_user)
+from keyboards.all_kb import main_kb
+from utils.chemistry import get_name_from_formula
+
+from .chemistry.chemical_reaction_calculator import reaction_calculator
 
 admin_router = Router()
 db = async_session_maker()

@@ -1,7 +1,7 @@
 import enum
 from typing import List
 
-from sqlalchemy import select, BigInteger, Text, String, ForeignKey, text
+from sqlalchemy import BigInteger, ForeignKey, String, Text, select, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base, async_session_maker

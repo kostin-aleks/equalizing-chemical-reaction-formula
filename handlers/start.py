@@ -1,16 +1,17 @@
-from aiogram import Router, F, Bot
+from aiogram import Bot, F, Router
 from aiogram.enums import ChatAction
-from aiogram.filters import CommandStart, Command, CommandObject
-from aiogram.types import Message
-from aiogram.types import BotCommand, BotCommandScopeDefault
-
+from aiogram.filters import Command, CommandObject, CommandStart
+from aiogram.types import BotCommand, BotCommandScopeDefault, Message
 from sqlalchemy import select
+
+from db_handler.database import async_session_maker
+from db_handler.models import (ChemicalReaction, ModeEnum, Profile, Substance,
+                               User, store_user)
 from keyboards.all_kb import main_kb  # , create_spec_kb, create_rat
 from keyboards.inline_kbs import ease_link_kb
-from .chemistry.chemical_reaction_calculator import reaction_calculator
 from utils.chemistry import get_name_from_formula
-from db_handler.models import User, Profile, Substance, ChemicalReaction, ModeEnum, store_user
-from db_handler.database import async_session_maker
+
+from .chemistry.chemical_reaction_calculator import reaction_calculator
 
 start_router = Router()
 db = async_session_maker()
