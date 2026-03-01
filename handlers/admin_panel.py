@@ -1,7 +1,7 @@
 from aiogram import Router, F, Bot
 from aiogram.types import Message
 from aiogram.utils.chat_action import ChatActionSender
-
+import emoji
 from sqlalchemy import select, func
 from keyboards.all_kb import main_kb
 from .chemistry.chemical_reaction_calculator import reaction_calculator
@@ -32,9 +32,9 @@ async def dashboard(message: Message, bot: Bot):
         print(admins_count)
 
         admin_text = 'В базе данных:\n'
-        admin_text += f'👥 Пользователи: <b>{users_count}</b> \n'
+        admin_text += emoji.emojize(f':student: Пользователи: <b>{users_count}</b> \n')
         admins = ' '.join([admin.username for admin in items])
-        admin_text += f'👤  Админы: <b>{admins_count}</b> ({admins})\n\n'
+        admin_text += emoji.emojize(f':technologist:  Админы: <b>{admins_count}</b> ({admins})\n\n')
 
         statement = select(func.count()).select_from(Substance)
         substance_count = await db.scalar(statement)
